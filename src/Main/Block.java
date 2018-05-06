@@ -10,5 +10,13 @@ package Main;
  * @author Amizz
  */
 public class Block {
+    public int Type;
+    public Object Value;
+    public Object Tag;
     
+    public Block() {
+        Type = 0;
+        Value = 0;
+        Tag = null;
+    }
 }
