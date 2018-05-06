@@ -47,12 +47,14 @@ public class Main {
             b.Type = 1;
             b.Value = pass.Label;
             b.Tag = pass;
-
+            b.Duration = 0.0f;
+            
             Block d = new Block();
             d.Type = 2;
             d.Value = Character.toLowerCase(pass.Label);
             d.Tag = pass;
-
+            d.Duration = 0.0f;
+            
             matrix[pass.Source.X][pass.Source.Y] = b;
             matrix[pass.Destination.X][pass.Destination.Y] = d;
         }

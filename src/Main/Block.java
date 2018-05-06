@@ -13,10 +13,12 @@ public class Block {
     public int Type;
     public Object Value;
     public Object Tag;
+    public float Duration;
     
     public Block() {
         Type = 0;
         Value = 0;
         Tag = null;
+        Duration = 1.0f;
     }
 }
