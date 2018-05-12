@@ -2,8 +2,44 @@ package Main;
 
 import java.util.*;
 import java.io.*;
+import javafx.application.Application;
+import static javafx.application.Application.launch;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.paint.Color;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
-public class Main {
+public class Main extends Application {
+
+    /**
+     * START GUI
+     */
+    static Stage window;
+    static Scene setupScene, taxiScene, resultScene;
+    static GridPane taxiLayout;
+    static VBox resultLayout;
+    /**
+     * END GUI
+     */
 
     static Block[][] matrix;
     static int size, passengers;
@@ -18,104 +54,105 @@ public class Main {
     static Scanner scan = new Scanner(System.in);
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
+        launch(args);
 
-        p("Enter map size: ");
-        size = scan.nextInt();
-
-        p("Enter number of passengers: ");
-        passengers = scan.nextInt();
-        s();
-        scan.nextLine();
-
-        matrix = new Block[size][size];
-
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                Block b = new Block();
-                b.Location = new Point(x, y);
-                matrix[x][y] = b;
-            }
-        }
-
-        for (int i = 0; i < passengers; i++) {
-            Passenger pass = new Passenger();
-            String[] parts;
-
-            p("Enter passenger #" + (i + 1) + " label: ");
-            pass.Label = scan.nextLine().charAt(0);
-
-            p("Enter passenger #" + (i + 1) + " source location: ");
-            parts = scan.nextLine().trim().split(",");
-            pass.Source = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-
-            p("Enter passenger #" + (i + 1) + " destination location: ");
-            parts = scan.nextLine().trim().split(",");
-            pass.Destination = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-
-            s();
-
-            sourceLbl.add(pass.Label);
-            destLbl.add(Character.toLowerCase(pass.Label));
-
-            passList.put(pass.Label, pass);
-
-            Block b = new Block();
-            b.Type = 1;
-            b.Value = pass.Label;
-            b.Tag = pass;
-            b.Duration = 0.0f;
-
-            Block d = new Block();
-            d.Type = 2;
-            d.Value = Character.toLowerCase(pass.Label);
-            d.Tag = pass;
-            d.Duration = 0.0f;
-
-            matrix[pass.Source.X][pass.Source.Y] = b;
-            matrix[pass.Destination.X][pass.Destination.Y] = d;
-
-            b.Location = pass.Source;
-            d.Location = pass.Destination;
-
-            passengerPoints.add(b);
-            passengerPoints.add(d);
-        }
-
-        pl("####################################");
-        pl("             Map Output:            ");
-        pl("####################################");
-        s();
-
-        p("   ");
-        for (int i = 0; i < size; i++) {
-            p(" " + i + " ");
-        }
-        s();
-        p("   ");
-        for (int i = 0; i < size; i++) {
-            p("___");
-        }
-        s();
-
-        for (int y = 0; y < size; y++) {
-            p(y + " |");
-            for (int x = 0; x < size; x++) {
-                p(" " + matrix[y][x].Value.toString() + " ");
-            }
-            s();
-        }
-
-        s();
-        pl("####################################");
-        pl(sourceLbl.toString() + " = source passenger labels");
-        pl(destLbl.toString() + " = destination passenger labels");
-        pl("0 = empty square");
-        pl("####################################");
-        s();
-
-        PerformPathFinding();
-
-        s();
+//        p("Enter map size: ");
+//        size = scan.nextInt();
+//
+//        p("Enter number of passengers: ");
+//        passengers = scan.nextInt();
+//        s();
+//        scan.nextLine();
+//
+//        matrix = new Block[size][size];
+//
+//        for (int y = 0; y < size; y++) {
+//            for (int x = 0; x < size; x++) {
+//                Block b = new Block();
+//                b.Location = new Point(x, y);
+//                matrix[x][y] = b;
+//            }
+//        }
+//
+//        for (int i = 0; i < passengers; i++) {
+//            Passenger pass = new Passenger();
+//            String[] parts;
+//
+//            p("Enter passenger #" + (i + 1) + " label: ");
+//            pass.Label = scan.nextLine().charAt(0);
+//
+//            p("Enter passenger #" + (i + 1) + " source location: ");
+//            parts = scan.nextLine().trim().split(",");
+//            pass.Source = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+//
+//            p("Enter passenger #" + (i + 1) + " destination location: ");
+//            parts = scan.nextLine().trim().split(",");
+//            pass.Destination = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+//
+//            s();
+//
+//            sourceLbl.add(pass.Label);
+//            destLbl.add(Character.toLowerCase(pass.Label));
+//
+//            passList.put(pass.Label, pass);
+//
+//            Block b = new Block();
+//            b.Type = 1;
+//            b.Value = pass.Label;
+//            b.Tag = pass;
+//            b.Duration = 0.0f;
+//
+//            Block d = new Block();
+//            d.Type = 2;
+//            d.Value = Character.toLowerCase(pass.Label);
+//            d.Tag = pass;
+//            d.Duration = 0.0f;
+//
+//            matrix[pass.Source.X][pass.Source.Y] = b;
+//            matrix[pass.Destination.X][pass.Destination.Y] = d;
+//
+//            b.Location = pass.Source;
+//            d.Location = pass.Destination;
+//
+//            passengerPoints.add(b);
+//            passengerPoints.add(d);
+//        }
+//
+//        pl("####################################");
+//        pl("             Map Output:            ");
+//        pl("####################################");
+//        s();
+//
+//        p("   ");
+//        for (int i = 0; i < size; i++) {
+//            p(" " + i + " ");
+//        }
+//        s();
+//        p("   ");
+//        for (int i = 0; i < size; i++) {
+//            p("___");
+//        }
+//        s();
+//
+//        for (int y = 0; y < size; y++) {
+//            p(y + " |");
+//            for (int x = 0; x < size; x++) {
+//                p(" " + matrix[y][x].Value.toString() + " ");
+//            }
+//            s();
+//        }
+//
+//        s();
+//        pl("####################################");
+//        pl(sourceLbl.toString() + " = source passenger labels");
+//        pl(destLbl.toString() + " = destination passenger labels");
+//        pl("0 = empty square");
+//        pl("####################################");
+//        s();
+//
+//        PerformPathFinding();
+//
+//        s();
     }
 
     private static void PerformPathFinding() throws FileNotFoundException, IOException {
@@ -322,197 +359,231 @@ public class Main {
         return (int) Math.pow((b.X - a.X), 2) + (int) Math.pow((b.Y - a.Y), 2);
     }
 
-//    private static void PerformPathFinding() {
-//        ArrayList<Block> route = new ArrayList<Block>();
-//        /*
-//        Step 1:
-//        - Get all the points that we're interested.
-//        - All the pickup and dropoff points so we can
-//        - make a route to go to each points
-//         */
-//
-//        // poi - Point Of Interests
-//        Point[] poi = GetPointsOrder(matrix, size);
-//
-//        // Step 2: Put the origin block (0,0) to the route.
-//        route.add(matrix[poi[0].X][poi[0].Y]);
-//        route.get(0).Flag = "start";
-//        
-//        /*
-//        Step 3:
-//        - for each neighbouring points in 'poi',
-//        - find the distance in terms of X and Y axis.
-//        - Then, fill the distance with blocks, and add the
-//        - filler blocks into the route.
-//         */
-//        for (int i = 0; i < poi.length - 1; i++) {
-//            Point origin = poi[i];
-//            Point dest = poi[i + 1];
-//            Block b_origin = matrix[origin.X][origin.Y];
-//            Block b_dest = matrix[dest.X][dest.Y];
-//            
-//            int y_delta = dest.Y - origin.Y;
-//            boolean y_positive_dir = (y_delta > -1);
-//            
-//            pl("Y delta for " + origin + "(" + b_origin.Value +")"
-//                    + " and " + dest + " (" + b_dest.Value + ") is " + y_delta);
-//            
-//            /*
-//            int x_dist = dest.X - origin.X;
-//            int y_dist = dest.Y - origin.Y;
-//
-//            Block origin_block = matrix[origin.X][origin.Y];
-//            origin_block.Flag = (origin_block.Type == 1 ? "pickup" : "dropoff");
-//            route.add(origin_block);
-//            
-//            // Fill in the horizontal gaps
-//            // (The move left/right)
-//            if (x_dist > -1) {
-//                // Positive distance. Loop upwards.
-//
-//                for (int x_pos = origin.X; x_pos <= dest.X; x_pos++) {
-//                    int y_pos = origin.Y;
-//                    Block b = matrix[x_pos][y_pos];
-//                    b.Flag = "goright";
-//                    route.add(b);
-//                }
-//            } else {
-//                // Negative distance. Loop backwards.
-//                for (int x_pos = origin.X - 1; x_pos >= dest.X; x_pos--) {
-//                    int y_pos = origin.Y;
-//                    Block b = matrix[x_pos][y_pos];
-//                    b.Flag = "goleft";
-//                    route.add(b);
-//                }
-//            }
-//
-//            // Fill in the vertical gaps
-//            // ( The move up/down )
-//            if (y_dist > -1) {
-//                // Positive distance. Loop upwards
-//                for (int y_pos = origin.Y; y_pos <= dest.Y; y_pos++) {
-//                    int x_pos = dest.X;
-//                    Block b = matrix[x_pos][y_pos];
-//                    b.Flag = "godown";
-//                    route.add(b);
-//                }
-//            } else {
-//                // Negative distance. Loop downwards
-//                for (int y_pos = origin.Y - 1; y_pos >= dest.Y; y_pos--) {
-//                    int x_pos = dest.X;
-//                    Block b = matrix[x_pos][y_pos];
-//                    b.Flag = "goup";
-//                    route.add(b);
-//                }
-//            }*/
-//        }
-//
-//        /*
-//        Step 4:
-//        - Showing the routes
-//         */
-//        for (int i = 0; i < route.size(); i++) {
-//            Block b = route.get(i);
-//            pl("Block type: " + b.Type + ", Flag: " + b.Flag + ", Tag: " + b.Tag);
-//        }
-//    }
-//
-//    private static Point[] GetPointsOrder(Block[][] matrix, int mapSize) {
-//        ArrayList<Point> path = new ArrayList<>();
-//        path.add(new Point(0, 0));
-//
-//        /*
-//        Add all the points into the 'path' ArrayList
-//         */
-//        for (int count = 0; count < (passList.size() * 2); count++) {
-//            Point lastPoint = path.get(path.size() - 1);
-//
-//            for (int i = 0; i < mapSize; i++) {
-//                // Get all points in 'i' radius from point 'lastPoint'
-//                Point[] pts = getSearchCoordinates(lastPoint.X, lastPoint.Y, i, mapSize);
-//
-//                for (Point p : pts) {
-//                    // Exception to ignore OutOfBound error (when checking points at region outside of the map)
-//                    try {
-//                        Block b = matrix[p.X][p.Y];
-//                        if (b.Type != 0) {
-//                            if (!path.contains(p)) {
-//                                path.add(p);
-//                                break;
-//                            }
-//                        }
-//                    } catch (Exception ex) {
-//                    }
-//                }
-//            }
-//        }
-//
-//        /*
-//        
-//        Check the early part of the path.
-//        The first point must be a pickup point.
-//        
-//        If it's not a pickup point, then swap whatever with
-//        the first occuring interest point.
-//        
-//         */
-//        // 1. Get the first occuring pickup/dropoff point.
-//        int pickIndex = -1, dropIndex = -1;
-//        for (int i = 0; i < path.size(); i++) {
-//            Block b = matrix[path.get(i).X][path.get(i).Y];
-//            
-//            if (b.Type == 1) {
-//                pickIndex = i;
-//            } else if (b.Type == 2) {
-//                dropIndex = i;
-//            }
-//            
-//            if (pickIndex > -1 && dropIndex > -1)
-//                break;
-//
-//        }
-//        
-//        // 2. Check if pickup is after dropoff
-//        //    If yes, swap them.
-//        if (pickIndex > dropIndex) {
-//            pl("Swapping");
-//            Collections.swap(path, pickIndex, dropIndex);
-//        }
-//
-//        return path.toArray(new Point[path.size()]);
-//    }
-//    
-//    private static Point[] getSearchCoordinates(int x, int y, int radius, int border) {
-//        ArrayList<Point> points = new ArrayList<Point>();
-//
-//        int upperBound = y - radius;//Math.max(0, y - radius);
-//        int lowerBound = y + radius; //Math.min(border, y + radius);
-//        int leftBound = x - radius; //Math.max(0, x - radius);
-//        int rightBound = x + radius; //Math.min(border, x + radius);
-//
-//        // get all coordinates on the upper bound
-//        // x is changing, y = upperBound
-//        for (int i = leftBound; i < rightBound; i++) {
-//            points.add(new Point(i, upperBound));
-//        }
-//
-//        // get all coordinates on the right bound
-//        // x = rightBound, y is changing
-//        for (int j = upperBound; j < lowerBound; j++) {
-//            points.add(new Point(rightBound, j));
-//        }
-//
-//        // get all coordinates on the lower bound
-//        // x is changing, y = lowerBound
-//        for (int k = rightBound; k > leftBound; k--) {
-//            points.add(new Point(k, lowerBound));
-//        }
-//
-//        // get all coordinates on the left bound
-//        // x = leftBound, y is changing
-//        for (int l = lowerBound; l > upperBound; l--) {
-//            points.add(new Point(leftBound, l));
-//        }
-//        return points.toArray(new Point[points.size()]);
-//    }
+    @Override
+    public void start(Stage primaryStage) {
+        window = primaryStage;
+
+        /**
+         * Scene 1
+         */
+        VBox setupLayout = new VBox();
+        Label intro = new Label("Welcome to DumbTaxi Inc");
+        intro.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-wrap-text:true; -fx-border-color:black;"
+                + "-fx-text-alignment: center; -fx-alignment: center; -fx-max-width:Infinity; -fx-padding: 5;");
+
+        Label sizeLbl = new Label("Size");
+        sizeLbl.setStyle("-fx-padding: 20 0 0 0;");
+        TextField size = new TextField();
+        size.setText("5");
+
+        Label numPassLbl = new Label("Number of Passenger");
+        TextField passenger = new TextField();
+        passenger.setText("2");
+
+        //Submit button
+        VBox buttonLayout = new VBox();
+        Button submitBtn = new Button("Submit");
+        submitBtn.setOnAction(e -> {
+            int parseSize = Integer.parseInt(size.getText());
+            int parsePassNum = Integer.parseInt(passenger.getText());
+            
+            taxiLayout.getChildren().clear();
+            taxiLayout.setBackground(new Background(new BackgroundFill(Color.WHITE, new CornerRadii(0), new Insets(0))));
+            table(parseSize);
+            setPassenger(parsePassNum, parseSize);
+            window.setScene(taxiScene);
+        });
+        buttonLayout.getChildren().add(submitBtn);
+        buttonLayout.setPadding(new Insets(20, 10, 10, 10));
+        buttonLayout.setAlignment(Pos.CENTER);
+
+        setupLayout.getChildren().add(intro);
+        setupLayout.getChildren().add(sizeLbl);
+        setupLayout.getChildren().add(size);
+        setupLayout.getChildren().add(numPassLbl);
+        setupLayout.getChildren().add(passenger);
+        setupLayout.getChildren().add(buttonLayout);
+
+        setupLayout.setPadding(new Insets(20, 20, 20, 20));
+        setupScene = new Scene(setupLayout, 300, 250);
+
+        /**
+         * Scene taxi
+         */
+        VBox rootTaxi = new VBox();
+        Label intro2 = new Label("Let the taxi move!");
+        intro2.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-wrap-text:true; -fx-border-color:black;"
+                + "-fx-text-alignment: center; -fx-alignment: center; -fx-max-width:Infinity; -fx-padding: 5;");
+        taxiLayout = new GridPane();
+        Button resultBtn = new Button("Result");
+        resultBtn.setOnAction(e -> {
+            try {
+                PerformPathFinding();
+            } catch(Exception error) {
+                System.out.println(error.getMessage());
+            }
+            resultBox();
+            window.setScene(resultScene);
+        });
+
+        rootTaxi.getChildren().add(intro2);
+        rootTaxi.getChildren().add(taxiLayout);
+        rootTaxi.getChildren().add(resultBtn);
+        rootTaxi.setSpacing(10);
+        rootTaxi.setPadding(new Insets(10));
+        taxiScene = new Scene(rootTaxi, 720, 360);
+
+        /**
+         * Scene result
+         */
+        resultLayout = new VBox();
+        Label intro3 = new Label("DumbTaxi Result");
+        intro3.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-wrap-text:true; -fx-border-color:black;"
+                + "-fx-text-alignment: center; -fx-alignment: center; -fx-max-width:Infinity; -fx-padding: 5;");
+
+        Button restartBtn = new Button("Restart");
+        restartBtn.setOnAction(e -> {
+            reset();
+            window.setScene(setupScene);
+        });
+        resultLayout.getChildren().add(intro3);
+        resultLayout.getChildren().add(restartBtn);
+        resultLayout.setPadding(new Insets(10));
+
+        resultScene = new Scene(resultLayout, 720, 360);
+
+        /**
+         * Global
+         */
+        window.setTitle("DumbTaxi");
+        window.setScene(setupScene);
+        window.show();
+    }
+
+    public static void alert(String title, String header, String content) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+
+        alert.showAndWait();
+    }
+
+    public static GridPane table(int size) {
+        for (int i = 0; i < size; i++) {
+            ColumnConstraints colConst = new ColumnConstraints();
+            colConst.setPercentWidth(100.0 / size);
+            colConst.setHgrow(Priority.ALWAYS);
+            taxiLayout.getColumnConstraints().add(colConst);
+
+            RowConstraints rowConst = new RowConstraints();
+            rowConst.setPercentHeight(100.0 / size);
+            rowConst.setVgrow(Priority.ALWAYS);
+            taxiLayout.getRowConstraints().add(rowConst);
+        }
+
+        taxiLayout.setGridLinesVisible(true);
+        return taxiLayout;
+    }
+
+    public static GridPane setPassenger(int passengerNum, int sizeGrid) {
+        Random r = new Random();
+        String alphabets = "ABCDEFGHIJKLMNOPQRTUVWXYZ";
+
+        matrix = new Block[sizeGrid][sizeGrid];
+
+        for (int y = 0; y < sizeGrid; y++) {
+            for (int x = 0; x < sizeGrid; x++) {
+                Block b = new Block();
+                b.Location = new Point(x, y);
+                matrix[x][y] = b;
+            }
+        }
+
+        for (int i = 0; i < passengerNum; i++) {
+            Passenger pass = new Passenger();
+            String[] parts;
+
+            pass.Label = alphabets.charAt(r.nextInt(alphabets.length()));
+            pass.Source = new Point(r.nextInt(sizeGrid), r.nextInt(sizeGrid));
+            Point temp = new Point(r.nextInt(sizeGrid), r.nextInt(sizeGrid));
+            while (temp.equals(pass.Source)) {
+                temp = new Point(r.nextInt(sizeGrid), r.nextInt(sizeGrid));
+            }
+            pass.Destination = new Point(r.nextInt(sizeGrid), r.nextInt(sizeGrid));
+            System.out.println(pass.Destination);
+            sourceLbl.add(pass.Label);
+            System.out.println(sourceLbl.toString());
+            destLbl.add(Character.toLowerCase(pass.Label));
+            passList.put(pass.Label, pass);
+
+            Block b = new Block();
+            b.Type = 1;
+            b.Value = pass.Label;
+            b.Tag = pass;
+            b.Duration = 0.0f;
+
+            Block d = new Block();
+            d.Type = 2;
+            d.Value = Character.toLowerCase(pass.Label);
+            d.Tag = pass;
+            d.Duration = 0.0f;
+            matrix[pass.Source.X][pass.Source.Y] = b;
+            matrix[pass.Destination.X][pass.Destination.Y] = d;
+
+            b.Location = pass.Source;
+            d.Location = pass.Destination;
+
+            passengerPoints.add(b);
+            passengerPoints.add(d);
+
+            Label pickup = new Label(Character.toString(pass.Label));
+            pickup.setPadding(new Insets(10));
+            taxiLayout.add(pickup, pass.Source.X, pass.Source.Y);
+
+            Label dropoff = new Label(Character.toString(Character.toLowerCase(pass.Label)));
+            dropoff.setPadding(new Insets(10));
+            taxiLayout.add(dropoff, pass.Destination.X, pass.Destination.Y);
+        }
+
+        return taxiLayout;
+    }
+
+    public static VBox resultBox() {
+
+        Label sourceLabel = new Label("####################################\n" + sourceLbl.toString() + " = source passenger labels");
+        Label destLabel = new Label(destLbl.toString() + " = destination passenger labels");
+        Label emptyLabel = new Label("0 = empty square\n" + "####################################");
+        ArrayList<Label> time = new ArrayList();
+
+
+        resultLayout.getChildren().add(sourceLabel);
+        resultLayout.getChildren().add(destLabel);
+        resultLayout.getChildren().add(emptyLabel);
+        
+        int count = 0;
+        for (HashMap.Entry<Character, Passenger> entry : passList.entrySet()) {
+            Passenger pas = entry.getValue();
+            time.add(new Label("Passenger " + pas.Label + " wait for " + pas.getWaitingTime() + ", ride for " + pas.getRideTime()));
+            resultLayout.getChildren().add(time.get(count));
+            count++;
+        }
+        return resultLayout;
+    }
+    
+    public static void reset() {
+        
+        matrix = new Block[1][1];
+        size=0;
+        passengers=5;
+
+        passList = new HashMap<Character, Passenger>();
+
+        sourceLbl = new ArrayList<>();
+        destLbl = new ArrayList<>();
+        passengerPoints = new ArrayList<>();
+
+        rnd = new Random();
+        scan = new Scanner(System.in);
+    }
 }
