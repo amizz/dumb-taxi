@@ -4,13 +4,15 @@ import java.util.*;
 
 public class Main {
 
+    static Block[][] matrix;
+    static int size, passengers;
+    static ArrayList<Passenger> passList = new ArrayList<Passenger>();
+    static ArrayList<Character> sourceLbl = new ArrayList<>(),
+            destLbl = new ArrayList<>();
+
+    static Scanner scan = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Block[][] matrix;
-        int size, passengers;
-        ArrayList<Passenger> passList = new ArrayList<Passenger>();
-        ArrayList<Character> sourceLbl = new ArrayList<>(),
-                destLbl = new ArrayList<>();
-        Scanner scan = new Scanner(System.in);
 
         p("Enter map size: ");
         size = scan.nextInt();
@@ -34,17 +36,20 @@ public class Main {
 
             p("Enter passenger #" + (i + 1) + " label: ");
             pass.Label = scan.nextLine().charAt(0);
+
             p("Enter passenger #" + (i + 1) + " source location: ");
             parts = scan.nextLine().trim().split(",");
             pass.Source = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+
             p("Enter passenger #" + (i + 1) + " destination location: ");
             parts = scan.nextLine().trim().split(",");
             pass.Destination = new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+
             s();
 
             sourceLbl.add(pass.Label);
             destLbl.add(Character.toLowerCase(pass.Label));
-            
+
             passList.add(pass);
 
             Block b = new Block();
@@ -59,8 +64,8 @@ public class Main {
             d.Tag = pass;
             d.Duration = 0.0f;
 
-            matrix[pass.Source.X][pass.Source.Y] = b;
-            matrix[pass.Destination.X][pass.Destination.Y] = d;
+            matrix[pass.Source.Y][pass.Source.X] = b;
+            matrix[pass.Destination.Y][pass.Destination.X] = d;
         }
 
         pl("####################################");
@@ -82,7 +87,7 @@ public class Main {
         for (int y = 0; y < size; y++) {
             p(y + " |");
             for (int x = 0; x < size; x++) {
-                p(" " + matrix[y][x].Value.toString() + " ");
+                p(" " + matrix[x][y].Value.toString() + " ");
             }
             s();
         }
@@ -93,6 +98,122 @@ public class Main {
         pl(destLbl.toString() + " = destination passenger labels");
         pl("0 = empty square");
         pl("####################################");
+        s();
+
+        PerformPathFinding();
+        
+        s();
+    }
+
+    private static void PerformPathFinding() {
+        ArrayList<Block> route = new ArrayList<Block>();
+        /*
+        Step 1:
+        - Get all the points that we're interested.
+        - All the pickup and dropoff points so we can
+        - make a route to go to each points
+        */
+        
+        // poi - Point Of Interests
+        Point[] poi = GetPointsOrder(matrix, size);
+        
+        // Step 2: Put the origin block (0,0) to the route.
+        route.add(matrix[poi[0].X][poi[0].Y]);
+        
+        /*
+        Step 3:
+        - for each neighbouring points in 'poi',
+        - find the distance in terms of X and Y axis.
+        - Then, fill the distance with blocks, and add the
+        - filler blocks into the route.
+        */
+        
+        for (int i = 0; i < poi.length - 1; i++) {
+            Point origin = poi[i];
+            Point dest = poi[i+1];
+            
+            int x_dist = dest.X - origin.X;
+            int y_dist = dest.Y - origin.Y;
+            
+            // Fill in the horizontal gaps
+            // (The move left/right)
+            if (x_dist > -1) {
+                // Positive distance. Loop upwards.
+                
+                for (int x_pos = origin.X + 1; x_pos <= dest.X; x_pos++) {
+                    int y_pos = origin.Y;
+                    route.add(matrix[x_pos][y_pos]);
+                }
+            } else {
+                // Negative distance. Loop backwards.
+                for (int x_pos = origin.X - 1; x_pos >= dest.X; x_pos--) {
+                    int y_pos = origin.Y;
+                    route.add(matrix[x_pos][y_pos]);
+                }
+            }
+        }
+    }
+    
+    private static Point[] GetPointsOrder(Block[][] matrix, int mapSize) {
+        LinkedList<Point> path = new LinkedList<>();
+        path.add(new Point(0, 0));
+
+        for (int count = 0; count < (passList.size() * 2); count++) {
+            Point lastPoint = path.get(path.size() - 1);
+
+            for (int i = 0; i < mapSize; i++) {
+                // Get all points in 'i' radius from point 'lastPoint'
+                Point[] pts = getSearchCoordinates(lastPoint.X, lastPoint.Y, i, mapSize);
+                
+                for (Point p : pts) {
+                    // Exception to ignore OutOfBound error (when checking points at region outside of the map)
+                    try {
+                        Block b = matrix[p.X][p.Y];
+                        if (b.Type != 0) {
+                            if (!path.contains(p))
+                                path.add(p);
+                        }
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+        }
+
+        return path.toArray(new Point[path.size()]);
+    }
+
+    private static Point[] getSearchCoordinates(int x, int y, int radius, int border) {
+        ArrayList<Point> points = new ArrayList<Point>();
+
+        int upperBound = y - radius;//Math.max(0, y - radius);
+        int lowerBound = y + radius; //Math.min(border, y + radius);
+        int leftBound = x - radius; //Math.max(0, x - radius);
+        int rightBound = x + radius; //Math.min(border, x + radius);
+
+        // get all coordinates on the upper bound
+        // x is changing, y = upperBound
+        for (int i = leftBound; i < rightBound; i++) {
+            points.add(new Point(i, upperBound));
+        }
+
+        // get all coordinates on the right bound
+        // x = rightBound, y is changing
+        for (int j = upperBound; j < lowerBound; j++) {
+            points.add(new Point(rightBound, j));
+        }
+
+        // get all coordinates on the lower bound
+        // x is changing, y = lowerBound
+        for (int k = rightBound; k > leftBound; k--) {
+            points.add(new Point(k, lowerBound));
+        }
+
+        // get all coordinates on the left bound
+        // x = leftBound, y is changing
+        for (int l = lowerBound; l > upperBound; l--) {
+            points.add(new Point(leftBound, l));
+        }
+        return points.toArray(new Point[points.size()]);
     }
 
     private static void s() {
