@@ -13,12 +13,20 @@ public class Block {
     public int Type;
     public Object Value;
     public Object Tag;
+    public Object Flag;
     public float Duration;
+    public Point Location;
     
     public Block() {
         Type = 0;
         Value = 0;
         Tag = null;
+        Flag = null;
         Duration = 1.0f;
+        Location = null;
+    }
+    
+    public String toString() {
+        return "Type:" + Type + ",Value:" + Value + ",Tag:"+Tag+",Flag:" + Flag + ",Duration:" + Duration+",Location:"+Location;
     }
 }
