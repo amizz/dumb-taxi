@@ -1,19 +1,23 @@
 package Main;
 
 import java.util.*;
+import java.io.*;
 
 public class Main {
 
     static Block[][] matrix;
     static int size, passengers;
-    static ArrayList<Passenger> passList = new ArrayList<Passenger>();
+
+    static Map<Character, Passenger> passList = new HashMap<Character, Passenger>();
+
     static ArrayList<Character> sourceLbl = new ArrayList<>(),
             destLbl = new ArrayList<>();
     static ArrayList<Block> passengerPoints = new ArrayList<>();
 
+    static Random rnd = new Random();
     static Scanner scan = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, IOException {
 
         p("Enter map size: ");
         size = scan.nextInt();
@@ -53,7 +57,7 @@ public class Main {
             sourceLbl.add(pass.Label);
             destLbl.add(Character.toLowerCase(pass.Label));
 
-            passList.add(pass);
+            passList.put(pass.Label, pass);
 
             Block b = new Block();
             b.Type = 1;
@@ -114,9 +118,10 @@ public class Main {
         s();
     }
 
-    private static void PerformPathFinding() {
+    private static void PerformPathFinding() throws FileNotFoundException, IOException {
         ArrayList<Block> routes = new ArrayList<Block>();
         ArrayList<Character> passengerOnTaxi = new ArrayList<>();
+        ArrayList<Block> finalRoute = new ArrayList<Block>();
 
         Block cur_b = new Block();
         cur_b.Location = new Point(0, 0);
@@ -148,23 +153,156 @@ public class Main {
 
             Block found = passengerPoints.remove(passIdx);
             found.Flag = (found.Type == 1 ? "pickup" : "dropoff");
-            
-            if (found.Type == 1)
-                passengerOnTaxi.add((Character)found.Value);
-            else
-            {
-                Character toFind = Character.toUpperCase((Character)found.Value);
+
+            if (found.Type == 1) {
+                passengerOnTaxi.add((Character) found.Value);
+            } else {
+                Character toFind = Character.toUpperCase((Character) found.Value);
                 int index = passengerOnTaxi.indexOf(toFind);
                 passengerOnTaxi.remove(index);
             }
-            
+
             routes.add(found);
             cur_b = found;
 
         }
 
-        for (int i = 0; i < routes.size(); i++) {
-            pl("Go to " + routes.get(i).Value + " as " + routes.get(i).Flag);
+        // Fill in the paths for each routes.
+        int routes_size = routes.size();
+        for (int i = 0; i < routes_size - 1; i++) {
+            Block b1 = routes.get(i);
+            Block b2 = routes.get(i + 1);
+
+            finalRoute.add(b1);
+
+            int horizontal_delta = b2.Location.Y - b1.Location.Y;
+            boolean positive_h = (horizontal_delta > -1);
+            int vertical_delta = b2.Location.X - b1.Location.X;
+            boolean positive_v = (vertical_delta > -1);
+
+            if (positive_h && horizontal_delta != 0) {
+                for (int c1 = 1; c1 <= horizontal_delta; c1++) {
+                    int x_c1 = b1.Location.X + c1;
+                    int y_c1 = b1.Location.Y;
+                    Block b_new = new Block();
+                    b_new.Value = new Point(x_c1, y_c1);
+                    b_new.Flag = "right";
+                    b_new.Location = new Point(x_c1, y_c1);
+                    finalRoute.add(b_new);
+                }
+            } else if (positive_h == false) {
+                horizontal_delta = horizontal_delta * -1;
+                for (int c2 = 1; c2 <= horizontal_delta; c2++) {
+                    int x_c2 = b1.Location.X - c2;
+                    int y_c2 = b1.Location.Y;
+
+                    Point p_c2 = new Point(x_c2, y_c2);
+
+                    Block b_c2 = new Block();
+                    b_c2.Value = p_c2;
+                    b_c2.Flag = "left";
+                    b_c2.Location = p_c2;
+
+                    finalRoute.add(b_c2);
+                }
+            }
+
+            if (positive_v && vertical_delta != 0) {
+                for (int c1 = 1; c1 <= vertical_delta; c1++) {
+                    int x_c1 = b2.Location.X;
+                    int y_c1 = b1.Location.Y + 1;
+                    Block b_new = new Block();
+                    b_new.Value = new Point(x_c1, y_c1);
+                    b_new.Flag = "down";
+                    b_new.Location = new Point(x_c1, y_c1);
+                    finalRoute.add(b_new);
+                }
+            } else if (positive_v == false) {
+                vertical_delta = vertical_delta * -1;
+                for (int c2 = 1; c2 <= vertical_delta; c2++) {
+                    int x_c2 = b1.Location.X;
+                    int y_c2 = b1.Location.Y - c2;
+
+                    Point p_c2 = new Point(x_c2, y_c2);
+
+                    Block b_c2 = new Block();
+                    b_c2.Value = p_c2;
+                    b_c2.Flag = "up";
+                    b_c2.Location = p_c2;
+
+                    finalRoute.add(b_c2);
+                }
+            }
+
+            if (i == routes_size - 2) {
+                finalRoute.add(b2);
+            }
+        }
+
+        File fout = new File("log.txt");
+        FileOutputStream fos = new FileOutputStream(fout);
+
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
+
+        writer.write("Execution Log:");
+        writer.newLine();
+        writer.newLine();
+
+        int cumulativeIndex = 0;
+        String logText = "";
+
+        for (int i = 0; i < finalRoute.size(); i++) {
+            Block b = finalRoute.get(i);
+            cumulativeIndex += b.Duration;
+
+            switch (b.Flag.toString()) {
+                case "begin":
+                    logText = "Taxi started";
+                    break;
+                case "pickup":
+                    logText = "Taxi fetch Passenger " + b.Value;
+                    break;
+                case "dropoff":
+                    logText = "Taxi dropped Passenger " + b.Value;
+                    break;
+                case "right":
+                case "left":
+                case "up":
+                case "down":
+                    logText = "Taxi move " + b.Flag;
+                    break;
+                default:
+                    logText = "Error!";
+            }
+
+            writer.write("[" + cumulativeIndex + "] " + logText);
+            writer.newLine();
+        }
+        writer.flush();
+        writer.close();
+        writer = null;
+
+        float mainDuration = 0;
+        for (int i = 0; i < finalRoute.size(); i++) {
+            Block b = finalRoute.get(i);
+            mainDuration += b.Duration;
+
+            if (b.Type == 1 || b.Type == 2) {
+                Character b_label = Character.toUpperCase((Character) b.Value);
+                if (b.Type == 1) {
+                    passList.get(b_label).PickupTime = mainDuration;
+                } else if (b.Type == 2) {
+                    passList.get(b_label).DropoffTime = mainDuration;
+                }
+            }
+        }
+
+        pl("######################################");
+        pl("                Result:               ");
+        pl("######################################");
+        for (HashMap.Entry<Character, Passenger> entry : passList.entrySet()) {
+            Passenger pas = entry.getValue();
+            pl("Passenger " + pas.Label + " wait for " + pas.getWaitingTime() + ", ride for " + pas.getRideTime());
         }
     }
 

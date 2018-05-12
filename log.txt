@@ -1,0 +1,25 @@
+Execution Log:
+
+[0] Taxi started
+[0] Taxi fetch Passenger A
+[1] Taxi move right
+[2] Taxi move right
+[3] Taxi move down
+[4] Taxi move down
+[4] Taxi fetch Passenger B
+[5] Taxi move right
+[6] Taxi move up
+[6] Taxi dropped Passenger a
+[7] Taxi move right
+[8] Taxi move up
+[8] Taxi fetch Passenger C
+[9] Taxi move down
+[10] Taxi move down
+[11] Taxi move down
+[12] Taxi move down
+[12] Taxi dropped Passenger c
+[13] Taxi move left
+[14] Taxi move left
+[15] Taxi move left
+[16] Taxi move left
+[16] Taxi dropped Passenger b

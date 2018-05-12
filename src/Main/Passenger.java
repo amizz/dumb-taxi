@@ -16,8 +16,16 @@ public class Passenger {
     public char Label;
     public Point Source;
     public Point Destination;
-    public boolean Picked = false;
-    public boolean Delivered = false;
+    public float PickupTime = 0.0f;
+    public float DropoffTime = 0.0f;
+    
+    public float getWaitingTime() {
+        return PickupTime;
+    }
+    
+    public float getRideTime() {
+        return (DropoffTime - PickupTime);
+    }
     /*
     private static List<Point> _points = new ArrayList<>();
     private static char _label = 'A';
